@@ -1,0 +1,8 @@
+[
+   {"zone":"kitchen",
+    "setting":22.1,
+    "device":"/dev/something0"},
+   {"zone":"Mud room",
+    "setting":22.0,
+    "device":"/dev/something1"} 
+]
