@@ -1,3 +1,10 @@
+
+#public folder
+public/
+
+
+# python stuff
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
