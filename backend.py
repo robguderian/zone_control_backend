@@ -55,7 +55,9 @@ class Controller:
         z = self.getZone(zonename)
         if z is not None:
             z['setting'] = newSetting
-        # TODO re-write json to disk
+
+        with open(self.filename, 'w') as f:
+            json.dump(self.config, f)
 
     def getAllJSON(self):
         output = []
@@ -105,21 +107,26 @@ def fetchCurrent(zone):
     Get the current temperature reading, and setting
     Single zone
     """
-    print(zone)
     currentTemp = (tempController.getCurrentAndSetting(zone))
     data = json.dumps( {"current":currentTemp[0], "setting":currentTemp[1]})
     return Response(data, status=200, mimetype='application/json')
 
 
 
-@app.route('/zones/<zone>/<float:temp>', methods=['POST'])
-def getTemp(zone, temp):
+@app.route('/zones/<zone>/<temp>', methods=['POST'])
+def setTemp(zone, temp):
     """
     POSTed value will be new setting
     """
-    print(zone)
-    print(temp)
-    return {}
+    try:
+        floatTemp = float(temp)
+        tempController.setConfig(zone,floatTemp)
+    except:
+        print("Bad float, ignoring")
+    
+    currentTemp = (tempController.getCurrentAndSetting(zone))
+    data = json.dumps( {"current":currentTemp[0], "setting":currentTemp[1]})
+    return Response(data, status=200, mimetype='application/json')
 
 @app.route('/')
 def index():
