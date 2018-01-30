@@ -1,11 +1,12 @@
 import json
 from threading import Timer
 
-from flask import Flask
+from flask import Flask, Response
 
 # set up flask, add a public folder
 app = Flask(__name__, static_folder='public', static_url_path='')
-
+TIMER_TIME = 2 * 60 # 2 minutes of 60 seconds
+TOLERANCE = 0.5 # degrees Celsius
 
 def get_current_temp(devname):
     """
@@ -25,16 +26,36 @@ class Controller:
         with open(filename) as f:
             self.config = json.load(f)
 
-    def getConfig(self, zonename):
+    def getZone(self, zonename):
         for z in self.config:
-            if z.zonename == zonename:
-                return z.setting
+            if z['zone'].lower() == zonename.lower():
+                return z
+
+    def getConfig(self, zonename):
+        print(self.config)
+        z = self.getZone(zonename)
+        if z is not None:
+            return z['setting']
+        return -1
+
+    def getCurrentTemp(self, zonename):
+        z = self.getZone(zonename)
+        if z is not None:
+            return get_current_temp(z["device"])
+        return -1
+
+    def getCurrentAndSetting(self, zonename):
+        z = self.getZone(zonename)
+        if z is not None:
+            return (get_current_temp(z["device"]), z['setting'])
+        return (-1, -1)
+
 
     def setConfig(self, zonename, newSetting):
-        for z in self.config:
-            if z.zonename == zonename:
-                z.setting = newSetting
-        # TODO re-write json
+        z = self.getZone(zonename)
+        if z is not None:
+            z['setting'] = newSetting
+        # TODO re-write json to disk
 
     def getAllJSON(self):
         output = []
@@ -44,11 +65,21 @@ class Controller:
                            "current": get_current_temp(z["device"])})
         return json.dumps(output)
 
+    def check_all(self):
+        for z in self.config:
+            actual = get_current_temp(z['device'])
+            
+            if actual - z['setting'] >= TOLERANCE: # Check high-limit. Turn off if > high limit
+                pass
+            elif z['setting'] - actual <= TOLERANCE: # check low-limit, turn on if too cold
+                pass
+
 def check_set_valves():
     """
     Check temperature of floors, set valves open or closed
     """
     print("Checking valves")
+    tempController.check_all()
     scheduler = Timer(TIMER_TIME, check_set_valves)
     scheduler.start()
 
@@ -59,14 +90,7 @@ tempController = Controller("config.json")
 # start a scheduled task
 # this task checks current temperatures, sets valve appropriately
 print("setting initial timer")
-TIMER_TIME = 2 * 60 # 2 minutes of 60 seconds
-scheduler = Timer(TIMER_TIME, check_set_valves)
-scheduler.start()
-
-
-@app.route("/")
-def index():
-    return ""
+check_set_valves()
 
 @app.route('/zones', methods=['GET'])
 def fetchAllCurrent():
@@ -76,17 +100,27 @@ def fetchAllCurrent():
     return tempController.getAllJSON()
 
 @app.route('/zones/<zone>', methods=['GET'])
-def fetchCurrent():
+def fetchCurrent(zone):
     """
     Get the current temperature reading, and setting
     Single zone
     """
-    pass
+    print(zone)
+    currentTemp = (tempController.getCurrentAndSetting(zone))
+    data = json.dumps( {"current":currentTemp[0], "setting":currentTemp[1]})
+    return Response(data, status=200, mimetype='application/json')
 
 
-@app.route('/zones/<zone>/<float:temp>', methods=['GET'])
-def getTemp():
+
+@app.route('/zones/<zone>/<float:temp>', methods=['POST'])
+def getTemp(zone, temp):
     """
     POSTed value will be new setting
     """
-    pass
+    print(zone)
+    print(temp)
+    return {}
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
