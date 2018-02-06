@@ -8,4 +8,4 @@ Doesn't do any auth, not designed for the greater-web.
 Running
 -------
 
-    FLASK_APP=backend.py flask run
+    FLASK_APP=backend.py flask run --host=0.0.0.0

@@ -13,12 +13,11 @@ def get_current_temp(devname):
     """
     Get the current temperature at device
     """
-    # TODO
     # needs to match
     #51 01 4b 46 7f ff 0c 10 ab : crc=ab YES\n51 01 4b 46 7f ff 0c 10 ab t=21062\n
     m = re.search("\st=(\d+)\n", open(devname).read())
 
-    return int(m.group(1))
+    return int(m.group(1))/1000
 
 class Controller:
     """
