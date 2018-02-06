@@ -5,7 +5,7 @@ import re
 from flask import Flask, Response
 
 # set up flask, add a public folder
-app = Flask(__name__, static_folder='public', static_url_path='', host='0.0.0.0')
+app = Flask(__name__, static_folder='public', static_url_path='')
 TIMER_TIME = 2 * 60 # 2 minutes of 60 seconds
 TOLERANCE = 0.5 # degrees Celsius
 
