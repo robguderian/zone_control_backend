@@ -1,8 +1,3 @@
 [
-   {"zone":"kitchen",
-    "setting":22.1,
-    "device":"/dev/something0"},
-   {"zone":"Mud room",
-    "setting":22.0,
-    "device":"/dev/something1"} 
-]
+    {"zone": "kitchen", "setting": 20.8, "device": "/sys/bus/w1/devices/28-0416b118faff/w1_slave"},
+    {"zone": "Mud room", "setting": 21.4, "device": "/dev/something1"}]

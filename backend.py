@@ -1,10 +1,11 @@
 import json
 from threading import Timer
+import re
 
 from flask import Flask, Response
 
 # set up flask, add a public folder
-app = Flask(__name__, static_folder='public', static_url_path='')
+app = Flask(__name__, static_folder='public', static_url_path='', host='0.0.0.0')
 TIMER_TIME = 2 * 60 # 2 minutes of 60 seconds
 TOLERANCE = 0.5 # degrees Celsius
 
@@ -13,7 +14,11 @@ def get_current_temp(devname):
     Get the current temperature at device
     """
     # TODO
-    return 22.2
+    # needs to match
+    #51 01 4b 46 7f ff 0c 10 ab : crc=ab YES\n51 01 4b 46 7f ff 0c 10 ab t=21062\n
+    m = re.search("\st=(\d+)\n", open(devname).read())
+
+    return int(m.group(1))
 
 class Controller:
     """
